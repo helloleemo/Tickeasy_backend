@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { User as UserEntity, RegionOptions, EventTypeOptions, Region, EventType } from '../models/user';
-import { ApiResponse, UpdateProfileRequest, UserProfileResponse, UserProfileData } from '../types';
-import { handleErrorAsync, ApiError, ErrorCode } from '../utils';
+import { ApiResponse, UpdateProfileRequest, UserProfileResponse, UserProfileData, ErrorCode } from '../types';
+import { handleErrorAsync, ApiError } from '../utils';
 
 /**
  * 獲取用戶個人資料
