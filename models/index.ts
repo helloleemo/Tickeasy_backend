@@ -12,6 +12,7 @@ export * from './location-tag.js';
 export * from './music-tag.js';
 export * from './venue.js';
 export * from './concert.js';
+export * from './concert-review.js';
 export * from './concert-session.js';
 export * from './ticket-type.js';
 export * from './order.js';

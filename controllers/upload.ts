@@ -154,10 +154,13 @@ async function uploadImage(req: Request, res: Response, next: NextFunction) {
           concertToUpdate.imgBanner = uploadResult.url;
           await AppDataSource.getRepository(Concert).save(concertToUpdate);
         }
-      } catch (dbError) {
+      } catch (e) {
+        console.error('更新資料庫失敗:', e);
         try {
           await storageService.deleteImage(uploadResult.path);
-        } catch {}
+        } catch (deleteError) {
+          console.error('Failed to delete image from storage after DB error:', deleteError);
+        }
         return next(createHttpError(500, '更新資料庫失敗'));
       }
       deleteOldImage(oldImageUrls).catch(() => {});

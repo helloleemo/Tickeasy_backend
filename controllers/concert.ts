@@ -17,6 +17,7 @@ import { Venue } from '../models/venue.js';
 import concertImageService from '../services/concertImageService.js';
 import { LocationTag } from '../models/location-tag.js';
 import { MusicTag } from '../models/music-tag.js';
+import concertReviewService from '../services/concertReviewService.js';
 
 /**
  * INDEX
@@ -899,6 +900,16 @@ export const submitConcertForReview = handleErrorAsync(
     // 更新狀態為審核中
     concert.conInfoStatus = 'reviewing';
     await concertRepository.save(concert);
+
+    // 非同步觸發 AI 審核，不影響主流程
+    concertReviewService.triggerAIReview(concert.concertId)
+      .then((aiReview) => {
+        console.log(`[AI審核] 演唱會 ${concert.concertId} AI審核已完成，狀態：${aiReview.reviewStatus}`);
+      })
+      .catch((err) => {
+        console.error(`[AI審核] 演唱會 ${concert.concertId} AI審核失敗：`, err);
+      });
+    //
 
     res.status(200).json({
       status: 'success',

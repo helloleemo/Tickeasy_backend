@@ -16,6 +16,7 @@ import { Venue } from './venue.js';
 import { LocationTag } from './location-tag.js';
 import { MusicTag } from './music-tag.js';
 import { ConcertSession } from './concert-session.js';
+import { ConcertReview } from './concert-review.js';
 // import { TicketType } from './ticket-type.js';
 
 export type ConInfoStatus = 'draft' | 'reviewing' | 'published' | 'rejected' | 'finished';
@@ -131,6 +132,12 @@ export class Concert {
   })
   sessions: ConcertSession[];
 
+  @OneToMany(() => ConcertReview, (review) => review.concert, {
+    cascade: false, // 不自動建立審核記錄
+    onDelete: 'CASCADE', // 刪除 Concert 時連動刪除 reviews
+  })
+  reviews: ConcertReview[];
+
   // @OneToMany(() => TicketType, ticketType => ticketType.concert)
   // ticketTypes: TicketType[];
 
@@ -162,5 +169,45 @@ export class Concert {
    */
   public canBeDeleted(): boolean {
     return ['draft', 'rejected', 'reviewing'].includes(this.conInfoStatus);
+  }
+
+  /**
+   * 取得最新審核記錄
+   */
+  public getLatestReview(): ConcertReview | undefined {
+    return this.reviews?.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
+  }
+
+  /**
+   * 檢查是否有待審核狀態
+   */
+  public isPendingReview(): boolean {
+    return this.conInfoStatus === 'reviewing';
+  }
+
+  /**
+   * 檢查是否需要AI審核
+   */
+  public needsAIReview(): boolean {
+    return this.conInfoStatus === 'reviewing' && this.reviewStatus === ReviewStatus.PENDING;
+  }
+
+  /**
+   * 取得所有 AI 審核記錄
+   */
+  public getAIReviews(): ConcertReview[] {
+    return this.reviews?.filter(review => review.isAIReview()) || [];
+  }
+
+  /**
+   * 取得最新的 AI 審核記錄
+   */
+  public getLatestAIReview(): ConcertReview | undefined {
+    const aiReviews = this.getAIReviews();
+    return aiReviews.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
   }
 }
